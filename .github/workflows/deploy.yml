@@ -22,7 +22,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             mkdir -p /home/${{ secrets.SSH_USERNAME }}/nginx-config
-            rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./nginx-config/ ${{ secrets.SSH_USERNAME }}@${{ secrets.HOST }}:/home/${{ secrets.SSH_USERNAME }}/nginx-config/
+            scp -P ${{ secrets.SSH_PORT }} -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -r ./nginx-config/* ${{ secrets.SSH_USERNAME }}@${{ secrets.HOST }}:/home/${{ secrets.SSH_USERNAME }}/nginx-config/
 
       - name: Deploy Nginx on VPS
         uses: appleboy/ssh-action@v0.1.8
