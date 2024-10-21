@@ -21,8 +21,11 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            sudo docker network create network || true
+            
             sudo docker stop nginx || true
             sudo docker rm nginx || true
+            
             sudo docker volume create nginx-config || true
             
             echo 'server {
@@ -41,6 +44,7 @@ jobs:
             sudo docker run --rm -v /home/${{ secrets.SSH_USERNAME }}/nginx-config:/etc/nginx/conf.d nginx:latest nginx -t
 
             sudo docker run -d \
+              --network network \
               -p 80:80 -p 443:443 \
               --name nginx \
               --restart unless-stopped \
