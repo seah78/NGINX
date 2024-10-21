@@ -13,6 +13,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Copy Nginx config to VPS
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p /home/${{ secrets.SSH_USERNAME }}/nginx-config
+            rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./nginx-config/ ${{ secrets.SSH_USERNAME }}@${{ secrets.HOST }}:/home/${{ secrets.SSH_USERNAME }}/nginx-config/
+
       - name: Deploy Nginx on VPS
         uses: appleboy/ssh-action@v0.1.8
         with:
@@ -24,6 +35,7 @@ jobs:
             sudo docker stop nginx || true
             sudo docker rm nginx || true
             sudo docker volume create nginx-config || true
+            sudo docker run --rm -v /home/${{ secrets.SSH_USERNAME }}/nginx-config:/etc/nginx/conf.d nginx:latest nginx -t
             sudo docker run -d \
               -p 80:80 -p 443:443 \
               --name nginx \
